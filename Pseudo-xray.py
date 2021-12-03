@@ -1,5 +1,3 @@
-# Bone-Suppression-X-RAY
-Bone suppression in X-ray images. We first generate a training data from CT images by projecting the bone and the rest of the lung region.
 #TODO: 1- Select images only < 1mm slice thickness
 #TODO: 2- Use interpolation to convert the voxels into isotropic voxels.
 #TODO: 3- Project the image into 2D plane on the antroposterior direction.
