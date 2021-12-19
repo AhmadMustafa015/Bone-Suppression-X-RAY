@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9d16de87-7e7d-4e5c-91b3-36ae640f2561" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Pseudo-xray.py" beforeDir="false" afterPath="$PROJECT_DIR$/Pseudo-xray.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -25,7 +27,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Pseudo-xray.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../Cengiz/Nodules-Detection" />
   </component>
   <component name="RunManager">
     <configuration name="PsuedoXray" type="PythonConfigurationType" factoryName="Python">
@@ -60,11 +62,14 @@
       <option name="presentableId" value="Default" />
       <updated>1639851578052</updated>
       <workItem from="1639851580858" duration="219000" />
-      <workItem from="1639851871039" duration="5492000" />
+      <workItem from="1639851871039" duration="14753000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Bone_Suppression_X_RAY$PsuedoXray.coverage" NAME="PsuedoXray Coverage Results" MODIFIED="1639874941934" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
