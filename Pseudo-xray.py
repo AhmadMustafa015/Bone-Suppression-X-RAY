@@ -20,7 +20,9 @@ import tempfile
 import datetime
 import copy
 import pydicom
-from pydicom.dataset import FileDataset, FileMetaDataset
+from pydicom.dataset import Dataset, FileDataset
+from pydicom.uid import ExplicitVRLittleEndian
+import pydicom._storage_sopclass_uids
 class CTtoXRAY:
     """
     Load CT images and select only the images with slice thickness < settings.min_slice_thick for further
@@ -173,68 +175,64 @@ class CTtoXRAY:
 
         for iz, ix in np.ndindex(image.shape):
             pixel = image[iz, ix]
-            image[iz, ix] = (pixel - image_min) / (image_max - image_min) * 255
-        image = np.array(image,np.uint8)
-        img_path = 'F:/Radiologics/Bone Supression/Bone-Suppression-X-RAY/generated_images/1.png'
+            image[iz, ix] = (pixel - image_min) / (image_max - image_min) * 1023
+        #image = np.array(image,np.uint10)
+        img_path = 'F:/Radiologics/Bone Supression/Bone-Suppression-X-RAY/generated_images/1.TIFF'
         cv.imwrite(img_path, image)
-        """
+
         ##################### SAVE AS DICOM ###################################
         # Create some temporary filenames
-        suffix = '.dcm'
-        filename_little_endian = tempfile.NamedTemporaryFile(suffix=suffix).name
-        filename_big_endian = tempfile.NamedTemporaryFile(suffix=suffix).name
-
         print("Setting file meta information...")
         # Populate required values for file meta information
-        file_meta = FileMetaDataset()
-        file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'
-        file_meta.MediaStorageSOPInstanceUID = "1.2.3"
-        file_meta.ImplementationClassUID = "1.2.3.4"
 
-        print("Setting dataset values...")
-        # Create the FileDataset instance (initially no data elements, but file_meta
-        # supplied)
-        ds = FileDataset(filename_little_endian, {},
-                         file_meta=file_meta, preamble=b"/0" * 128)
+        meta = pydicom.Dataset()
+        meta.MediaStorageSOPClassUID = pydicom._storage_sopclass_uids.MRImageStorage
+        meta.MediaStorageSOPInstanceUID = pydicom.uid.generate_uid()
+        meta.TransferSyntaxUID = pydicom.uid.ExplicitVRLittleEndian
 
-        # Add the data elements -- not trying to set all required here. Check DICOM
-        # standard
+        ds = Dataset()
+        ds.file_meta = meta
+
+        ds.is_little_endian = True
+        ds.is_implicit_VR = False
+
+        ds.SOPClassUID = pydicom._storage_sopclass_uids.MRImageStorage
         ds.PatientName = "Test^Firstname"
         ds.PatientID = "123456"
 
-        # Set the transfer syntax
-        ds.is_little_endian = True
-        ds.is_implicit_VR = True
+        #ds.Modality = "MR"
+        ds.SeriesInstanceUID = pydicom.uid.generate_uid()
+        ds.StudyInstanceUID = pydicom.uid.generate_uid()
+        ds.FrameOfReferenceUID = pydicom.uid.generate_uid()
 
-        # Set creation date/time
-        dt = datetime.datetime.now()
-        ds.ContentDate = dt.strftime('%Y%m%d')
-        timeStr = dt.strftime('%H%M%S.%f')  # long format with micro seconds
-        ds.ContentTime = timeStr
+        ds.BitsStored = 8
+        ds.BitsAllocated = 8
+        ds.SamplesPerPixel = 1
+        ds.HighBit = 7
 
-        print("Writing test file", filename_little_endian)
-        ds.save_as(filename_little_endian)
-        print("File saved.")
+        ds.ImagesInAcquisition = "1"
 
-        # Write as a different transfer syntax XXX shouldn't need this but pydicom
-        # 0.9.5 bug not recognizing transfer syntax
-        ds.file_meta.TransferSyntaxUID = pydicom.uid.ExplicitVRBigEndian
-        ds.is_little_endian = False
-        ds.is_implicit_VR = False
+        ds.Rows = image.shape[0]
+        ds.Columns = image.shape[1]
+        ds.InstanceNumber = 1
 
-        print("Writing test file as Big Endian Explicit VR", filename_big_endian)
-        ds.save_as(filename_big_endian)
+        ds.ImagePositionPatient = r"0\0\1"
+        ds.ImageOrientationPatient = r"1\0\0\0\-1\0"
+        ds.ImageType = r"ORIGINAL\PRIMARY\AXIAL"
 
-        # reopen the data just for checking
-        for filename in (filename_little_endian, filename_big_endian):
-            print('Load file {} ...'.format(filename))
-            ds = pydicom.dcmread(filename)
-            print(ds)
+        ds.RescaleIntercept = "0"
+        ds.RescaleSlope = "1"
+        ds.PixelSpacing = r"1\1"
+        ds.PhotometricInterpretation = "MONOCHROME2"
+        ds.PixelRepresentation = 1
 
-            # remove the created file
-            print('Remove file {} ...'.format(filename))
-            os.remove(filename)
-        """
+        pydicom.dataset.validate_file_meta(ds.file_meta, enforce_standard=True)
+
+        print("Setting pixel data...")
+        ds.PixelData = image.tobytes()
+
+        ds.save_as(r"out.dcm")
+
 
 
 if __name__ == "__main__":
@@ -244,8 +242,8 @@ if __name__ == "__main__":
     image = ct_to_xray.resample_image(image,spacing)
     bone_raw = ct_to_xray.extract_bones(image)
     image, bone = ct_to_xray.projection_2d(image), ct_to_xray.projection_2d(bone_raw)
-    #image = ct_to_xray.bone_enhancement(image,bone)
-    #image = ct_to_xray.unsharp_masking_process(image)
+    image = ct_to_xray.bone_enhancement(image,bone)
+    image = ct_to_xray.unsharp_masking_process(image)
     ct_to_xray.save_xray_image(image)
     print("Successfully finished")
 
